@@ -3,3 +3,5 @@ deps/
 .project
 .cproject
 *.user
+datas/
+.vscode/
