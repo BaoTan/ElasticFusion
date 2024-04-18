@@ -1,38 +1,4 @@
 #!/usr/bin/python
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2013, Juergen Sturm, TUM
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-#  * Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#  * Redistributions in binary form must reproduce the above
-#    copyright notice, this list of conditions and the following
-#    disclaimer in the documentation and/or other materials provided
-#    with the distribution.
-#  * Neither the name of TUM nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-# Requirements: 
-# sudo apt-get install python-argparse
 
 """
 The Kinect provides the color and depth images in an un-synchronized way. This means that the set of time stamps from the color images do not intersect with those of the depth images. Therefore, we need some way of associating color images to depth images.
@@ -44,6 +10,7 @@ import argparse
 import sys
 import os
 import numpy
+from gen import getDataTxt
 
 
 def read_file_list(filename):
@@ -106,23 +73,37 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='''
     This script takes two data files with timestamps and associates them   
     ''')
-    parser.add_argument('first_file', help='first text file (format: timestamp data)')
-    parser.add_argument('second_file', help='second text file (format: timestamp data)')
+    parser.add_argument('--data_file', help='the address of the data include depth and rgb directory')
+    parser.add_argument('--first_file', help='first text file (format: timestamp data)')
+    parser.add_argument('--second_file', help='second text file (format: timestamp data)')
     parser.add_argument('--first_only', help='only output associated lines from first file', action='store_true')
     parser.add_argument('--offset', help='time offset added to the timestamps of the second file (default: 0.0)',default=0.0)
     parser.add_argument('--max_difference', help='maximally allowed time difference for matching entries (default: 0.02)',default=0.02)
     args = parser.parse_args()
+    print(args)
 
-    first_list = read_file_list(args.first_file)
-    second_list = read_file_list(args.second_file)
+    if args.data_file:
+        rgb_file, depth_file = getDataTxt(args.data_file)
+        print(rgb_file)
+        print(depth_file)
+        first_list = read_file_list(rgb_file)
+        second_list = read_file_list(depth_file)
+    else:
+        first_list = read_file_list(args.first_file)
+        second_list = read_file_list(args.second_file)
 
     matches = associate(first_list, second_list,float(args.offset),float(args.max_difference))    
+
+    associations_file_name= args.data_file + '/' + 'associations.txt'
+    fp = open(associations_file_name, 'w')
+
 
     if args.first_only:
         for a,b in matches:
             print("%f %s"%(a," ".join(first_list[a])))
     else:
         for a,b in matches:
-            print("%f %s %f %s"%(a," ".join(first_list[a]),b-float(args.offset)," ".join(second_list[b])))
-            
-        
+            str_data = "%f %s %f %s \n"%(a," ".join(first_list[a]),b-float(args.offset)," ".join(second_list[b]))
+            # print(str_data)
+            fp.write(str_data)
+        fp.close()

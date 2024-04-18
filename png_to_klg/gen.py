@@ -13,7 +13,8 @@ def natural_key(string_):
     return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
  
 def timeFile(fileList, path, subfolder):
-    fp = open(path + '/' + subfolder + '.txt', 'w')
+    file_name = path + '/' + subfolder + '.txt'
+    fp = open(file_name, 'w')
     
     count = 0.033333
     
@@ -22,32 +23,29 @@ def timeFile(fileList, path, subfolder):
         count = count + 0.033333
     
     fp.close()
+    return file_name
 
-def main():
-    #mypath = './rgb'
-    if len(sys.argv) < 2:
-        print "please input folder path, >python ./gen.py ./dir\ndir contains rgb and depth folder"
-        sys.exit(1)
-
-    mypath = sys.argv[1]
-    print(mypath)
-    
-
+def getDataTxt(mypath):
     rgbfiles = [f for f in listdir(mypath+'/rgb') if isfile(join(mypath+'/rgb', f))]
     depthfiles = [f for f in listdir(mypath+'/depth') if isfile(join(mypath+'/depth', f))]
 
     intersection = list(set(rgbfiles) & set(depthfiles))
 
-
-
-
     intersection.sort(key=natural_key)
     #print(onlyfiles)
     
-    timeFile(intersection, mypath, 'rgb')
-    timeFile(intersection, mypath, 'depth')
+    rgb_file = timeFile(intersection, mypath, 'rgb')
+    depth_file = timeFile(intersection, mypath, 'depth')
+    return rgb_file, depth_file
 
 
 if __name__ == "__main__":
-    main()
+        #mypath = './rgb'
+    if len(sys.argv) < 2:
+        print("please input folder path, >python ./gen.py ./dir\ndir contains rgb and depth folder")
+        sys.exit(1)
+
+    mypath = sys.argv[1]
+    print(mypath)
+    getDataTxt(mypath)
 
