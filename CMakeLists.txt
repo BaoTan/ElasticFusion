@@ -46,6 +46,7 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-O3 -msse2 -msse3 -Wall -DSHADER_DIR=${e
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -DSHADER_DIR=${efusion_SHADER_DIR}")
 
 add_subdirectory(Core)
+add_subdirectory(png_to_klg)
 
 add_executable(ElasticFusion 
                ${srcs}
